@@ -4,7 +4,9 @@ import tensorflow as tf
 import time
 import sys
 import os
-
+'''
+就看这个small把,在readme.里面有下载模型的地址.
+'''
 class YOLO_TF:
 	fromfile = None
 	tofile_img = 'test/output.jpg'
@@ -55,7 +57,7 @@ class YOLO_TF:
 				else : self.disp_console = False
 				
 	def build_networks(self):
-		if self.disp_console : print "Building YOLO_small graph..."
+		if self.disp_console : print( "Building YOLO_small graph...")
 		self.x = tf.placeholder('float32',[None,448,448,3])
 		self.conv_1 = self.conv_layer(1,self.x,64,7,2)
 		self.pool_2 = self.pooling_layer(2,self.conv_1,2,2)
@@ -93,7 +95,7 @@ class YOLO_TF:
 		self.sess.run(tf.initialize_all_variables())
 		self.saver = tf.train.Saver()
 		self.saver.restore(self.sess,self.weights_file)
-		if self.disp_console : print "Loading complete!" + '\n'
+		if self.disp_console : print ("Loading complete!" + '\n')
 
 	def conv_layer(self,idx,inputs,filters,size,stride):
 		channels = inputs.get_shape()[3]
@@ -106,11 +108,11 @@ class YOLO_TF:
 
 		conv = tf.nn.conv2d(inputs_pad, weight, strides=[1, stride, stride, 1], padding='VALID',name=str(idx)+'_conv')	
 		conv_biased = tf.add(conv,biases,name=str(idx)+'_conv_biased')	
-		if self.disp_console : print '    Layer  %d : Type = Conv, Size = %d * %d, Stride = %d, Filters = %d, Input channels = %d' % (idx,size,size,stride,filters,int(channels))
+		if self.disp_console : print ('    Layer  %d : Type = Conv, Size = %d * %d, Stride = %d, Filters = %d, Input channels = %d' % (idx,size,size,stride,filters,int(channels)))
 		return tf.maximum(self.alpha*conv_biased,conv_biased,name=str(idx)+'_leaky_relu')
 
 	def pooling_layer(self,idx,inputs,size,stride):
-		if self.disp_console : print '    Layer  %d : Type = Pool, Size = %d * %d, Stride = %d' % (idx,size,size,stride)
+		if self.disp_console : print( '    Layer  %d : Type = Pool, Size = %d * %d, Stride = %d' % (idx,size,size,stride))
 		return tf.nn.max_pool(inputs, ksize=[1, size, size, 1],strides=[1, stride, stride, 1], padding='SAME',name=str(idx)+'_pool')
 
 	def fc_layer(self,idx,inputs,hiddens,flat = False,linear = False):
@@ -124,7 +126,7 @@ class YOLO_TF:
 			inputs_processed = inputs
 		weight = tf.Variable(tf.truncated_normal([dim,hiddens], stddev=0.1))
 		biases = tf.Variable(tf.constant(0.1, shape=[hiddens]))	
-		if self.disp_console : print '    Layer  %d : Type = Full, Hidden = %d, Input dimension = %d, Flat = %d, Activation = %d' % (idx,hiddens,int(dim),int(flat),1-int(linear))	
+		if self.disp_console : print( '    Layer  %d : Type = Full, Hidden = %d, Input dimension = %d, Flat = %d, Activation = %d' % (idx,hiddens,int(dim),int(flat),1-int(linear))	)
 		if linear : return tf.add(tf.matmul(inputs_processed,weight),biases,name=str(idx)+'_fc')
 		ip = tf.add(tf.matmul(inputs_processed,weight),biases)
 		return tf.maximum(self.alpha*ip,ip,name=str(idx)+'_fc')
@@ -142,10 +144,10 @@ class YOLO_TF:
 		self.result = self.interpret_output(net_output[0])
 		self.show_results(img,self.result)
 		strtime = str(time.time()-s)
-		if self.disp_console : print 'Elapsed time : ' + strtime + ' secs' + '\n'
+		if self.disp_console : print ('Elapsed time : ' + strtime + ' secs' + '\n')
 
 	def detect_from_file(self,filename):
-		if self.disp_console : print 'Detect from ' + filename
+		if self.disp_console : print ('Detect from ' + filename)
 		img = cv2.imread(filename)
 		#img = misc.imread(filename)
 		self.detect_from_cvmat(img)
@@ -227,7 +229,7 @@ class YOLO_TF:
 			w = int(results[i][3])//2
 			h = int(results[i][4])//2
 			class_results_set.add(results[i][0])
-			if self.disp_console : print '    class : ' + results[i][0] + ' , [x,y,w,h]=[' + str(x) + ',' + str(y) + ',' + str(int(results[i][3])) + ',' + str(int(results[i][4]))+'], Confidence = ' + str(results[i][5])
+			if self.disp_console : print( '    class : ' + results[i][0] + ' , [x,y,w,h]=[' + str(x) + ',' + str(y) + ',' + str(int(results[i][3])) + ',' + str(int(results[i][4]))+'], Confidence = ' + str(results[i][5]))
 			if self.filewrite_img or self.imshow:
 				cv2.rectangle(img_cp,(x-w,y-h),(x+w,y+h),(0,255,0),2)
 				cv2.rectangle(img_cp,(x-w,y-h-20),(x+w,y-h),(125,125,125),-1)
@@ -239,7 +241,7 @@ class YOLO_TF:
 			# new_img_path=self.fromfolder[:-14]+"test7/selected_ImageNet_person/"+str(self.detected)+"_white_margin_orgin_pic.jpg"
 			# cv2.imwrite(new_img_path,img_cp)
 		if self.filewrite_img : 
-			if self.disp_console : print '    image file writed : ' + self.tofile_img
+			if self.disp_console : print ('    image file writed : ' + self.tofile_img)
 			is_saved = cv2.imwrite(self.tofile_img,img_cp)
 			if is_saved == True:
 				print("Saved under:",self.tofile_img)
@@ -249,7 +251,7 @@ class YOLO_TF:
 			cv2.imshow('YOLO_small detection',img_cp)
 			cv2.waitKey(1)
 		if self.filewrite_txt : 
-			if self.disp_console : print '    txt file writed : ' + self.tofile_txt
+			if self.disp_console : print ('    txt file writed : ' + self.tofile_txt)
 			ftxt.close()
 
 	def iou(self,box1,box2):

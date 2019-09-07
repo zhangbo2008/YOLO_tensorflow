@@ -8,7 +8,7 @@ import os
 就看这个small把,在readme.里面有下载模型的地址.
 '''
 class YOLO_TF:
-	fromfile = None
+	fromfile = 'test/person.jpg'
 	tofile_img = 'test/output.jpg'
 	tofile_txt = 'test/output.txt'
 	imshow = True
@@ -32,6 +32,9 @@ class YOLO_TF:
 		self.overall_pics = 0
 		self.argv_parser(argvs)
 		self.build_networks()
+		#从测试可以看出来,self.属性自动会获取类属性.
+		print("test,,,,,,,,,",self.fromfile)
+		print(YOLO_TF.fromfile)
 		if self.fromfile is not None: self.detect_from_file(self.fromfile)
 		if self.fromfolder is not None:
 			filename_list = os.listdir(self.fromfolder)
@@ -48,6 +51,8 @@ class YOLO_TF:
 			else:
 				self.fromfolder = None
 			if argvs[i] == '-tofile_img' : self.tofile_img = argvs[i+1] ; self.filewrite_img = True
+			else:
+				self.filewrite_img=True#修改成默认参数就是保存图片
 			if argvs[i] == '-tofile_txt' : self.tofile_txt = argvs[i+1] ; self.filewrite_txt = True
 			if argvs[i] == '-imshow' :
 				if argvs[i+1] == '1' :self.imshow = True
